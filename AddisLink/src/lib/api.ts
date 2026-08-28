@@ -1,0 +1,114 @@
+import { Product } from '@/data/mockData';
+
+// ==========================================
+// TYPES
+// ==========================================
+
+export interface ApiProduct {
+    id: string;
+    shopId: string;
+    rawText: string;
+    parsedSpecs: any;
+    price: number;
+    imageUrl: string | null;
+    createdAt: string;
+    shop: {
+        name: string;
+        isVerified: boolean;
+        trustScore: number;
+        locationLat: number | null;
+        locationLong: number | null;
+    }
+}
+
+export interface PaginatedResult {
+    data: Product[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}
+
+// ==========================================
+// MAPPERS
+// ==========================================
+
+// Convert API response to UI Product model
+export function mapApiProductToUi(apiProduct: ApiProduct): Product {
+    return {
+        id: apiProduct.id,
+        title: apiProduct.rawText.split('\n')[0] || 'Unknown Product',
+        rawText: apiProduct.rawText,
+        price: apiProduct.price,
+        condition: 'Used', // Default or need parsing
+        shop: {
+            id: apiProduct.shopId,
+            name: apiProduct.shop.name,
+            isVerified: apiProduct.shop.isVerified,
+            trustScore: apiProduct.shop.trustScore,
+        },
+        imageUrl: apiProduct.imageUrl || 'https://via.placeholder.com/300',
+        postedAt: new Date(apiProduct.createdAt).toLocaleDateString(),
+        specs: apiProduct.parsedSpecs as any || {},
+    }
+}
+
+// ==========================================
+// FETCH LOGIC
+// ==========================================
+
+export async function fetchProducts(
+    query?: string,
+    minPrice?: string,
+    maxPrice?: string,
+    page: number = 1
+): Promise<PaginatedResult> {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (minPrice) params.append('minPrice', minPrice);
+    if (maxPrice) params.append('maxPrice', maxPrice);
+    params.append('page', page.toString());
+    params.append('limit', '12');
+
+    // 1. Get the Backend URL from Vercel Env Variables (e.g., https://your-app.onrender.com)
+    // Fallback to localhost for local development
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+    // 2. Determine the request URL based on environment (Server vs Client)
+    // Server-Side: We MUST use the full absolute URL (e.g., https://render.com/api/...)
+    // Client-Side: We use relative path ('/api/...') so it triggers the next.config.js rewrite
+    const url = typeof window === 'undefined'
+        ? `${apiBase}/api/products?${params.toString()}`
+        : `/api/products?${params.toString()}`;
+
+    try {
+        const res = await fetch(url, { cache: 'no-store' });
+
+        if (!res.ok) {
+            console.error(`Failed to fetch products: ${res.status}`);
+            return { data: [], pagination: { total: 0, page: 1, limit: 12, totalPages: 0 } };
+        }
+
+        const responseData = await res.json();
+
+        // Handle both old array format (fallback) and new paginated format
+        if (Array.isArray(responseData)) {
+            return {
+                data: responseData.map(mapApiProductToUi),
+                pagination: { total: responseData.length, page: 1, limit: 12, totalPages: 1 }
+            };
+        }
+
+        // Handle standard paginated response
+        return {
+            data: responseData.data.map(mapApiProductToUi),
+            pagination: responseData.pagination
+        };
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        return { data: [], pagination: { total: 0, page: 1, limit: 12, totalPages: 0 } };
+    }
+}

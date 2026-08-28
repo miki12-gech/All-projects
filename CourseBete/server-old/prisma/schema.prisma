@@ -1,0 +1,92 @@
+// This tells Prisma to generate JavaScript code for us
+generator client {
+  provider = "prisma-client-js"
+}
+
+// This tells Prisma we are using PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. THE USERS
+model User {
+  id            Int           @id @default(autoincrement())
+  fullName      String
+  email         String        @unique
+  passwordHash  String
+  role          String        @default("student")
+  createdAt     DateTime      @default(now())
+
+  enrollments   Enrollment[]
+  quizResults   QuizResult[]
+}
+
+// 2. THE COURSES
+model Course {
+  id            Int           @id @default(autoincrement())
+  title         String
+  description   String?
+  thumbnailUrl  String?
+  createdAt     DateTime      @default(now())
+
+  lessons       Lesson[]
+  enrollments   Enrollment[]
+}
+
+// 3. THE LESSONS
+model Lesson {
+  id          Int           @id @default(autoincrement())
+  title       String
+  videoUrl    String?
+  contentText String?
+  order       Int
+  
+  courseId    Int
+  course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Relationships
+  questions   Question[]
+  quizResults QuizResult[]
+}
+
+// 4. THE QUESTIONS
+model Question {
+  id            Int      @id @default(autoincrement())
+  questionText  String
+  options       String[]
+  correctAnswer Int
+  explanation   String?
+  
+  lessonId      Int
+  lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+// 5. ENROLLMENTS
+model Enrollment {
+  id        Int      @id @default(autoincrement())
+  joinedAt  DateTime @default(now())
+
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  courseId  Int
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId]) 
+}
+
+// 6. QUIZ RESULTS
+model QuizResult {
+  id          Int       @id @default(autoincrement())
+  score       Float
+  passed      Boolean   @default(false)
+  attemptedAt DateTime  @default(now())
+
+  userId      Int
+  // --- UPDATED: Added onDelete: Cascade here ---
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lessonId    Int
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}

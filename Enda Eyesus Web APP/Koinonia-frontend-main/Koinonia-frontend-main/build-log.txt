@@ -1,0 +1,12 @@
+﻿   Γû▓ Next.js 15.5.12
+
+   Creating an optimized production build ...
+node : uncaughtException [Error: kill EPERM] { errno: -4048, code: 'EPERM', 
+syscall: 'kill' }
+At line:1 char:60
++ ... ndaEyesus'; node --trace-warnings node_modules/next/dist/bin/next bui ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (uncaughtExcepti...scall: 'kill' } 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

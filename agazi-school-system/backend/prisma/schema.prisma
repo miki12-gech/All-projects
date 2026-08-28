@@ -1,0 +1,232 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String
+  role              Role      @default(STUDENT)
+  passwordResetToken String?
+  passwordResetExpiry DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  
+  studentProfile    Student?
+  teacherProfile    Teacher?
+
+  notifications     Notification[]
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  firstName       String
+  lastName        String
+  gradeLevel      Int      // 9, 10, 11, 12
+  section         String   // A, B, C, D, E, F, G
+  stream          Stream?  // NATURAL or SOCIAL (for grades 11 and 12)
+  gender          String?  // MALE or FEMALE
+  
+  // Contact Information
+  phoneNumber     String   // 10 digits starting with 0
+  address         String?
+  dateOfBirth     DateTime
+  
+  // Family Details
+  fatherName      String?
+  motherName      String?
+  guardianName    String?
+  guardianPhone   String?  // 10 digits starting with 0
+  emergencyContact String?
+  
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  attendances     Attendance[] 
+  grades          Grade[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+model Teacher {
+  id              String   @id @default(uuid())
+  firstName       String
+  lastName        String
+  phoneNumber     String   // 10 digits starting with 0
+  specialization  String?  // e.g., Mathematics, Physics
+  
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relationships
+  subjectAssignments TeacherSubjectAssignment[]
+  attendances     Attendance[]
+  grades          Grade[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+// Teacher-Subject-Section Assignment
+model TeacherSubjectAssignment {
+  id          String   @id @default(uuid())
+  teacherId   String
+  teacher     Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  gradeLevel  Int      // Which grade (9-12)
+  section     String   // Which section (A, B, C, etc.)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  @@unique([teacherId, subjectId, gradeLevel, section])
+}
+
+model Subject {
+  id          String   @id @default(uuid())
+  name        String   // e.g., Math, Physics, History
+  code        String   @unique // e.g., MATH101, PHY201
+  gradeLevel  Int      // Which grade (9-12)
+  stream      Stream?  // For which stream (Natural/Social)
+  
+  grades      Grade[]
+  teacherAssignments TeacherSubjectAssignment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model Attendance {
+  id          String           @id @default(uuid())
+  date        DateTime         @default(now())
+  status      AttendanceStatus
+  
+  studentId   String
+  student     Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  teacherId   String?          // Who marked this attendance
+  teacher     Teacher?         @relation(fields: [teacherId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  @@unique([studentId, date])
+}
+
+model Grade {
+  id            String   @id @default(uuid())
+  
+  // Grade components (total = 100)
+  finalExam     Float    @default(0) // out of 50
+  midExam       Float    @default(0) // out of 30
+  quiz          Float    @default(0) // out of 10
+  classActivity Float    @default(0) // out of 10
+  
+  // Calculated fields
+  totalScore    Float    // Sum of all components
+  letterGrade   String   // A+, A, A-, B+, etc.
+  isPassed      Boolean  // >= 50 is pass
+  
+  term          Int      // Semester (1 or 2)
+  academicYear  String   // e.g., "2025/2026"
+  
+  studentId     String
+  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  subjectId     String
+  subject       Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  
+  teacherId     String?  // Who entered this grade
+  teacher       Teacher? @relation(fields: [teacherId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  
+  @@unique([studentId, subjectId, term, academicYear])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  title       String
+  message     String
+  type        NotificationType
+  recipientRole Role?  // Optional metadata (who it was intended for)
+  gradeLevel   Int?    // Optional metadata (future: class targeting)
+  section      String? // Optional metadata (future: class targeting)
+  isRead      Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model SystemSettings {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  value           String
+  description     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+}
+
+model PendingStudent {
+  id                String   @id @default(uuid())
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  gender            String?
+  phoneNumber       String
+  address           String?
+  gradeLevel        Int
+  stream            Stream?
+  fatherName        String?
+  motherName        String?
+  guardianName      String?
+  guardianPhone      String?
+  emergencyContact   String?
+  status            String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  submittedAt       DateTime @default(now())
+  reviewedAt        DateTime?
+  reviewedBy        String?
+  reviewComments    String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now()) @updatedAt
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum Stream {
+  NATURAL
+  SOCIAL
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  GRADE_POSTED
+  ATTENDANCE_ALERT
+  SYSTEM
+}

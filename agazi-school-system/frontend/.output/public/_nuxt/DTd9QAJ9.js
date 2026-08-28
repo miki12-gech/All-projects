@@ -1,0 +1,1 @@
+const h=()=>{const o=()=>{const e={};{const t=localStorage.getItem("agazi_token");t&&(e.Authorization=`Bearer ${t}`)}return e};return{get:e=>$fetch(e,{method:"GET",headers:o()}),post:(e,t)=>$fetch(e,{method:"POST",body:t,headers:o()}),patch:(e,t)=>$fetch(e,{method:"PATCH",body:t,headers:o()}),del:e=>$fetch(e,{method:"DELETE",headers:o()})}};export{h as u};

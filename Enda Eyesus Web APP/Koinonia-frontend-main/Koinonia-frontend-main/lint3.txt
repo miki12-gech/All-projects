@@ -1,0 +1,46 @@
+﻿
+> temp-app@0.1.0 lint
+> eslint
+
+node.exe : 
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String 
+   ) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Oops! Something went wrong! :(
+
+ESLint: 9.39.3
+
+TypeError: nextVitals is not iterable
+    at file:///C:/Users/VICTUS/EndaEyesus/Frontend-En
+daEyesus/eslint.config.mjs?mtime=1771784450760:6:6
+    at ModuleJob.run 
+(node:internal/modules/esm/module_job:377:25)
+    at async onImport.tracePromise.__proto__ 
+(node:internal/modules/esm/loader:689:26)
+    at async dynamicImportConfig (C:\Users\VICTUS\End
+aEyesus\Frontend-EndaEyesus\node_modules\eslint\lib\c
+onfig\config-loader.js:186:17)
+    at async loadConfigFile (C:\Users\VICTUS\EndaEyes
+us\Frontend-EndaEyesus\node_modules\eslint\lib\config
+\config-loader.js:276:9)
+    at async ConfigLoader.calculateConfigArray (C:\Us
+ers\VICTUS\EndaEyesus\Frontend-EndaEyesus\node_module
+s\eslint\lib\config\config-loader.js:589:23)
+    at async #calculateConfigArray (C:\Users\VICTUS\E
+ndaEyesus\Frontend-EndaEyesus\node_modules\eslint\lib
+\config\config-loader.js:743:23)
+    at async entryFilter (C:\Users\VICTUS\EndaEyesus\
+Frontend-EndaEyesus\node_modules\eslint\lib\eslint\es
+lint-helpers.js:322:5)
+    at async NodeHfs.<anonymous> (file:///C:/Users/VI
+CTUS/EndaEyesus/Frontend-EndaEyesus/node_modules/@hum
+anfs/core/src/hfs.js:574:24)
+    at async NodeHfs.walk (file:///C:/Users/VICTUS/En
+daEyesus/Frontend-EndaEyesus/node_modules/@humanfs/co
+re/src/hfs.js:614:3)

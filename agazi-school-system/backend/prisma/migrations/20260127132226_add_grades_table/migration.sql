@@ -1,0 +1,18 @@
+-- CreateEnum
+CREATE TYPE "Subject" AS ENUM ('MATH', 'ENGLISH', 'AMHARIC', 'PHYSICS', 'BIOLOGY', 'CHEMISTRY', 'HISTORY', 'GEOGRAPHY');
+
+-- CreateTable
+CREATE TABLE "Grade" (
+    "id" TEXT NOT NULL,
+    "subject" "Subject" NOT NULL,
+    "score" DOUBLE PRECISION NOT NULL,
+    "term" INTEGER NOT NULL,
+    "studentId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Grade_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Grade" ADD CONSTRAINT "Grade_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

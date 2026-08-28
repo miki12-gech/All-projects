@@ -1,0 +1,24 @@
+model User {
+  id        Int      @id @default(autoincrement())
+  phone     String   @unique
+  name      String
+  password  String
+  equbs     Membership[]
+  createdAt DateTime @default(now())
+}
+
+model Equb {
+  id            Int      @id @default(autoincrement())
+  name          String
+  totalAmount   Float
+  members       Membership[]
+  createdAt     DateTime @default(now())
+}
+
+model Membership {
+  id      Int   @id @default(autoincrement())
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  equb    Equb  @relation(fields: [equbId], references: [id])
+  equbId  Int
+}

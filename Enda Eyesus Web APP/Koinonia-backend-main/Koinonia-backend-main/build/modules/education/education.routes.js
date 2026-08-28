@@ -1,0 +1,36 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const education_controller_1 = require("./education.controller");
+const auth_1 = require("../../middleware/auth");
+const educationGuard_1 = require("../../middleware/educationGuard");
+const router = (0, express_1.Router)();
+const controller = new education_controller_1.EducationController();
+router.use(auth_1.requireAuth);
+// Public (member) routes
+router.get('/batches', controller.listBatches);
+router.get('/batches/:id/subjects', controller.getSubjectsWithLessons);
+router.get('/enrollments/my/:phase', controller.getMyEnrollment);
+router.post('/enrollments/request', controller.requestRegistration);
+router.post('/exams/:id/submit', controller.submitExam);
+router.get('/exams/:id', controller.getExam);
+router.get('/phases', controller.getGubaePhases);
+// Manager only routes
+router.use(educationGuard_1.requireEducationManager);
+router.get('/class-members', controller.getEducationClassMembers);
+router.get('/enrolled-members', controller.getEnrolledMembers);
+router.post('/members/graduate', controller.markMemberGraduated);
+router.post('/members/ungraduate', controller.removeMemberGraduation);
+router.post('/batches', controller.createBatch);
+router.post('/subjects', controller.createSubject);
+router.post('/lessons', controller.createLesson);
+router.post('/lessons/:id/explanations', controller.addInlineExplanation);
+router.post('/exams', controller.createExam);
+router.get('/enrollments/pending', controller.getPendingEnrollments);
+router.patch('/enrollments/:id', controller.updateEnrollmentStatus);
+router.get('/enrollments/:batchId/students', controller.getEnrolledStudents);
+router.get('/results', controller.getStudentResults);
+router.post('/results/:enrollmentId/subject/:subjectId/override', controller.overrideSubjectScore);
+router.post('/results/:enrollmentId/exit/override', controller.overrideExitScore);
+router.post('/enrollments/:id/graduate', controller.graduateMember);
+exports.default = router;
